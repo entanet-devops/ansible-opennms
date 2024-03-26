@@ -1,0 +1,7 @@
+---
+- name: Opennms Provisioning
+  hosts: localhost
+  tasks:
+  - name: Hello World
+    debug:
+      msg: It works
