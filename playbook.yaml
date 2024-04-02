@@ -16,7 +16,7 @@
 
     - name: Set postgres admin password
       ansible.builtin.shell:
-        cmd: "/opt/opennms/bin/scvcli set postgres-admin postgres {{ lookup('aws_ssm', '/nme/opennms/pgsql/user/admin/password', region='eu-west-2') }}"
+        cmd: "/opt/opennms/bin/scvcli set postgres-admin admin {{ lookup('aws_ssm', '/nme/opennms/pgsql/user/admin/password', region='eu-west-2') }}"
 
   - name: Template opennms-datasources.xml
     ansible.builtin.template:
