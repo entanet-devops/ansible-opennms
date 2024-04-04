@@ -1,0 +1,42 @@
+---
+- name: Opennms Provisioning
+  hosts: localhost
+  become: true
+  tasks:
+  - name: Print Ansible version
+    debug:
+      msg: "Running Ansible verision {{ ansible_version.full }}"
+
+  - name: Set postgres passwords
+    become_user: opennms
+    block:
+    - name: Set postgres opennms password
+      ansible.builtin.shell:
+        cmd: "/opt/opennms/bin/scvcli set postgres opennms {{ lookup('aws_ssm', '/nme/opennms/pgsql/user/opennms/password', region='eu-west-2') }}"
+
+    - name: Set postgres admin password
+      ansible.builtin.shell:
+        cmd: "/opt/opennms/bin/scvcli set postgres-admin opennmsadmin {{ lookup('aws_ssm', '/nme/opennms/pgsql/user/opennmsadmin/password', region='eu-west-2') }}"
+
+  - name: Template opennms-datasources.xml
+    ansible.builtin.template:
+      src: templates/opennms-datasources.xml.j2
+      dest: /opt/opennms/etc/opennms-datasources.xml
+      owner: opennms
+      group: opennms
+      mode: "0664"
+
+  - name: Run opennms/bin/runjava
+    ansible.builtin.shell:
+      cmd: /opt/opennms/bin/runjava -s
+
+  - name: Run opennms/bin/install
+    ansible.builtin.shell:
+      cmd: /opt/opennms/bin/install -dis
+
+  - name: Start opennms service
+    ansible.builtin.systemd_service:
+      name: opennms
+      state: started
+      enabled: true
+...
